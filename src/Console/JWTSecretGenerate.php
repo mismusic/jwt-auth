@@ -8,11 +8,11 @@ use Illuminate\Support\Str;
 class JWTSecretGenerate extends Command
 {
 
-    protected $signature = 'jwt-secret:generate';
+    protected $signature = 'jwt-secret:generate
+                            {--L|length= : 生成JWT secret的长度，默认为60}
+                            {--S|show : 是否只显示生成的JWT secret}';
 
-    protected $description = '生成一个JWT secret
-                                {--L|length= : 生成JWT secret的长度，默认为60}
-                                {--S|show : 是否只显示生成的JWT secret}';
+    protected $description = '生成一个JWT secret';
 
     public function handle()
     {

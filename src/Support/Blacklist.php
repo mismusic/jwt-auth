@@ -21,7 +21,7 @@ trait Blacklist
         Cache::add($key, $token, $ttl);
     }
 
-    public function get($token, $prefix = null) :mixed
+    public function get($token, $prefix = null)
     {
         if (is_null($prefix)) {
             $prefix = $this->prefix;

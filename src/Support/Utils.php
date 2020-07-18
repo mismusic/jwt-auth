@@ -16,7 +16,8 @@ class Utils
     public static function decoded($data)
     {
         $data = self::base64UrlDecode($data);
-        if ($result = @json_decode($data) === null) {
+        $result = @json_decode($data, true);
+        if ($result === null) {
             return $data;
         } else {
             return $result;

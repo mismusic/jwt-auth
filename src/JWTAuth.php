@@ -4,6 +4,7 @@ namespace MisMusic\JWTAuth;
 
 use Illuminate\Support\Facades\Cache;
 use MisMusic\JWTAuth\Contracts\JWTManage;
+use MisMusic\JWTAuth\Exceptions\JWTException;
 use MisMusic\JWTAuth\Support\Blacklist;
 use MisMusic\JWTAuth\Support\JWT;
 use MisMusic\JWTAuth\Support\TTL;
@@ -15,11 +16,10 @@ class JWTAuth implements JWTManage
 
     protected $header;
     protected $payload;
-    protected $blacklist;
 
     protected $ttl;
 
-    public function __construct(Header $header, Payload $payload, Blacklist $blacklist)
+    public function __construct(Header $header, Payload $payload)
     {
         $this->header = $header;
         $this->payload = $payload;
@@ -33,20 +33,27 @@ class JWTAuth implements JWTManage
         $this->verifyToken($token);
     }
 
-    public function getToken()
+    public function getTokenInfo($onlyData = true)
     {
         // 获取token
         $token = $this->getRequestToken();
+        if (empty($token)) {
+            throw new JWTException('JWT 获取请求token失败');
+        }
         // 验证token
-        return $this->verifyToken($token);
+        $payload = $this->verifyToken($token);
+        if ($onlyData === true) {
+            return $payload->getClaims()->getClaims();
+        }
+        return $payload->toArray();
     }
 
     public function create(array $claims = [], $flag = null)
     {
         // 生成一个token值
         $time = time();  // 获取当前时间戳
-        $expTime = bcadd($time, $this->getTTL());  // 过期时间
-        $jti = str_replace('.', '', uniqid('jwt', true));  // 生成一个唯一的标识
+        $expTime = intval(bcadd($time, $this->getTTL()));  // 过期时间
+        $jti = str_replace('.', '', uniqid('jwt_', true));  // 生成一个唯一的标识
         $this->payload->setJti($jti);  // 设置jwt标识
         $this->payload->setIat($time);  // 设置jwt开始时间
         $this->payload->setNbf($time);  // 设置jwt生效时间

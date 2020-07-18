@@ -8,6 +8,8 @@ use MisMusic\JWTAuth\Exceptions\JWTException;
 trait JWT
 {
 
+    use Blacklist;
+
     public $hmacMapping = [
         'HS256' => 'sha256',
         'HS384' => 'sha384',
@@ -18,7 +20,7 @@ trait JWT
 
     public function getRequestToken()
     {
-        if ($token === request()->headers->get('Authorization')) {
+        if (! $token = request()->headers->get('Authorization')) {
             return false;
         }
         return ltrim(str_replace('Bearer', '', $token));
@@ -31,10 +33,11 @@ trait JWT
             throw new JWTException('JWT token格式错误');
         }
         $header = Utils::decoded($data[0]);
+        $payload = Utils::decoded($data[1]);
         $this->header->setItem((array) $header);
-        $this->payload->setItem((array) $header);
+        $this->payload->setItem((array) $payload);
         // 验证signature是否正确
-        $signature = $this->generateSign($data[0], $data[1], $this->header->alg);
+        $signature = $this->generateSign($data[0], $data[1], $this->header->getAlg());
         if (! hash_equals($signature, $data[2])) {
             throw new JWTException('JWT 验证签名失败');
         }
@@ -44,7 +47,7 @@ trait JWT
             throw new JWTException('JWT token已失效');
         }
         // 检测token是否加入黑名单
-        if ($this->blacklist->get($token) === null)
+        if (! is_null($this->get($token)))
         {
             throw new JWTException('JWT token已加入黑名单');
         }
@@ -56,7 +59,7 @@ trait JWT
                 throw new JWTException('JWT 该token值已被占用');
             }
         }
-        return $token;
+        return $this->getPayload();
     }
 
     public function getPayload()
@@ -71,7 +74,7 @@ trait JWT
 
     public function addBlacklist($token, $ttl = null, $prefix = null) :void
     {
-        $this->blacklist->add($token, $ttl, $prefix);
+        $this->add($token, $ttl, $prefix);
     }
 
     public function generateSign($header, $payload, $algo = 'HS256', $join = '.')
