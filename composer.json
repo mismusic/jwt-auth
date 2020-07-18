@@ -1,0 +1,40 @@
+{
+    "name": "mismusic/jwt-auth",
+    "description": "a simple JSON Web Token Authentication for Laravel and Lumen",
+    "keywords": [
+        "auth",
+        "authentication",
+        "json web token",
+        "jwt",
+        "laravel",
+        "token"
+    ],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "MisMusic",
+            "email": "13534256342@163.com"
+        }
+    ],
+    "require": {
+        "php": "^7.0",
+        "laravel/framework": "^5.5",
+    },
+    "autoload": {
+        "psr-4": {
+            "MisMusic\\JWTAuth\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "aliases": {
+                "JWTAuth": "MisMusic\\JWTAuth\\Facades\\JWTAuth",
+            },
+            "providers": [
+                "MisMusic\\JWTAuth\\Providers\\JWTServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "dev",
+
+}
