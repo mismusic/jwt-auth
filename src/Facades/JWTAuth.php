@@ -1,5 +1,7 @@
 <?php
 
+namespace MisMusic\JWTAuth\Facades;
+
 use Illuminate\Support\Facades\Facade;
 
 class JWTAuth extends Facade
