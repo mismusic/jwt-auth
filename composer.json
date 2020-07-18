@@ -18,7 +18,7 @@
     ],
     "require": {
         "php": "^7.0",
-        "laravel/framework": "^5.5",
+        "laravel/framework": "^5.5"
     },
     "autoload": {
         "psr-4": {
@@ -28,13 +28,12 @@
     "extra": {
         "laravel": {
             "aliases": {
-                "JWTAuth": "MisMusic\\JWTAuth\\Facades\\JWTAuth",
+                "JWTAuth": "MisMusic\\JWTAuth\\Facades\\JWTAuth"
             },
             "providers": [
                 "MisMusic\\JWTAuth\\Providers\\JWTServiceProvider"
             ]
         }
     },
-    "minimum-stability": "dev",
-
+    "minimum-stability": "dev"
 }
