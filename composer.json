@@ -37,6 +37,5 @@
                 "MisMusic\\JWTAuth\\Providers\\JWTServiceProvider"
             ]
         }
-    },
-    "minimum-stability": "dev"
+    }
 }
