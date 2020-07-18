@@ -18,7 +18,10 @@
     ],
     "require": {
         "php": "^7.0",
-        "laravel/framework": "^5.5"
+        "illuminate/auth": "^5.2|^6|^7",
+        "illuminate/contracts": "^5.2|^6|^7",
+        "illuminate/http": "^5.2|^6|^7",
+        "illuminate/support": "^5.2|^6|^7"
     },
     "autoload": {
         "psr-4": {
