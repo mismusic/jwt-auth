@@ -25,27 +25,24 @@ class JWTAuth implements JWTManage
         $this->payload = $payload;
     }
 
-    public function valid($token)
+    public function valid($flag = null)
     {
         // 获取token
         $token = $this->getRequestToken();
         // 验证token
-        $this->verifyToken($token);
+        $this->verifyToken($token, $flag);
     }
 
-    public function getTokenInfo($onlyData = true)
+    public function getTokenInfo($onlyData = true, $flag = null)
     {
         // 获取token
         $token = $this->getRequestToken();
-        if (empty($token)) {
-            throw new JWTException('JWT 获取请求token失败');
-        }
         // 验证token
-        $payload = $this->verifyToken($token);
+        $this->verifyToken($token, $flag);
         if ($onlyData === true) {
-            return $payload->getClaims()->getClaims();
+            return $this->getClaims()->getClaims();
         }
-        return $payload->toArray();
+        return $this->getPayload()->toArray();
     }
 
     public function create(array $claims = [], $flag = null)
@@ -61,25 +58,22 @@ class JWTAuth implements JWTManage
         $this->payload->setClaims($claims);  // 设置用户要存储的自定义数据
         $header = Utils::encoded($this->header->toArray());  // 对头部数据先进行json加密，然后进行base64Url加密
         $payload = Utils::encoded($this->payload->toArray());  // 对载荷数据进行加密
-        $algo = $this->header->getAlg();  // 获取头部里面的algo
-        $signature = $this->generateSign($header, $payload, $algo);  // 生成签名
+        $signature = $this->generateSign($header, $payload);  // 生成签名
         $token = $header . '.' . $payload . '.' . $signature;  // 把头部，载荷，签名组合成为一个token
-
         // 判断是不是单点登录
         if (! is_null($flag)) {
             $this->singlePointLogin($flag, $token);
         }
-
-        // 返回该token值
+        // 返回token值
         return $token;
     }
 
     public function refresh($token, $flag = null)
     {
         // 验证token
-        $requestToken = $this->verifyToken($token, $flag);
+        $this->verifyToken($token, $flag);
         // 把请求token加入到黑名单
-        $this->addBlacklist($requestToken);
+        $this->addBlacklist($token);
         // 生成一个新的token值
         $token = $this->create([], $flag);
         // 返回token值
@@ -89,9 +83,9 @@ class JWTAuth implements JWTManage
     public function delete($token)
     {
         // 验证token
-        $requestToken = $this->verifyToken($token);
+        $this->verifyToken($token);
         // 把请求token加入到黑名单
-        $this->addBlacklist($requestToken);
+        $this->addBlacklist($token);
     }
 
 }

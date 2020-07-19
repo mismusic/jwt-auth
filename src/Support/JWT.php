@@ -21,7 +21,7 @@ trait JWT
     public function getRequestToken()
     {
         if (! $token = request()->headers->get('Authorization')) {
-            return false;
+            throw new JWTException('JWT 获取请求token失败');
         }
         return ltrim(str_replace('Bearer', '', $token));
     }
@@ -37,7 +37,7 @@ trait JWT
         $this->header->setItem((array) $header);
         $this->payload->setItem((array) $payload);
         // 验证signature是否正确
-        $signature = $this->generateSign($data[0], $data[1], $this->header->getAlg());
+        $signature = $this->generateSign($data[0], $data[1]);
         if (! hash_equals($signature, $data[2])) {
             throw new JWTException('JWT 验证签名失败');
         }
@@ -47,7 +47,7 @@ trait JWT
             throw new JWTException('JWT token已失效');
         }
         // 检测token是否加入黑名单
-        if (! is_null($this->get($token)))
+        if (! is_null($this->getBlacklist($token)))
         {
             throw new JWTException('JWT token已加入黑名单');
         }
@@ -55,11 +55,15 @@ trait JWT
         if (! is_null($flag)) {
             $splToken = Cache::get($this->singlePointLoginPrefix . $flag);  // 获取到单点登录时存储的token值
             // 如果单点登录的token值和请求中的token不一致时，抛出错误
-            if (! hash_equals(md5($splToken), md5($token))) {
+            if (! hash_equals($splToken, md5($token))) {
                 throw new JWTException('JWT 该token值已被占用');
             }
         }
-        return $this->getPayload();
+    }
+
+    public function getHeader()
+    {
+        return $this->header;
     }
 
     public function getPayload()
@@ -72,13 +76,9 @@ trait JWT
         return $this->payload->getClaims();
     }
 
-    public function addBlacklist($token, $ttl = null, $prefix = null) :void
+    public function generateSign($header, $payload, $join = '.')
     {
-        $this->add($token, $ttl, $prefix);
-    }
-
-    public function generateSign($header, $payload, $algo = 'HS256', $join = '.')
-    {
+        $algo = $this->header->getAlg();  // 获取头部里面的algo
         if (! array_key_exists(strtoupper($algo), $this->hmacMapping)) {
             throw new JWTException("JWT algo {$algo} 不是被允许的加密类型");
         }
@@ -103,7 +103,7 @@ trait JWT
     {
         $key = $this->singlePointLoginPrefix . $flag;
         // 进行单点登录的时候需要把当前正在使用的token存储到缓存里面
-        Cache::put($key, $token, $this->singlePointLoginTTL);
+        Cache::put($key, md5($token), $this->singlePointLoginTTL);
     }
 
 }
